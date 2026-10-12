@@ -16,14 +16,14 @@ export function App() {
 
   return (
     <main className="card">
-      <h1>订阅我们的周报</h1>
-      <p className="lead">每周一封，随时可以退订。</p>
+      <h1>Subscribe to our weekly newsletter</h1>
+      <p className="lead">One email a week. Unsubscribe anytime.</p>
 
       {done ? (
-        <p id="success" className="success">订阅成功 🎉</p>
+        <p id="success" className="success">You're subscribed 🎉</p>
       ) : (
         <form onSubmit={onSubmit} noValidate>
-          <label htmlFor="email">邮箱</label>
+          <label htmlFor="email">Email</label>
           <input
             id="email"
             type="email"
@@ -36,16 +36,16 @@ export function App() {
           />
           {invalid && (
             <p id="error" className="error">
-              请输入有效的邮箱地址
+              Please enter a valid email address
             </p>
           )}
 
           <div className="actions">
             <button id="primary-btn" type="submit" className="btn btn-primary">
-              订阅
+              Subscribe
             </button>
             <button id="secondary-btn" type="button" className="btn btn-secondary">
-              以后再说
+              Maybe later
             </button>
           </div>
         </form>

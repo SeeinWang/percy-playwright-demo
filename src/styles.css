@@ -10,7 +10,7 @@
   --success: #16a34a;
 }
 * { box-sizing: border-box; }
-/* React 挂载点不参与布局，卡片直接作为 body 的 grid 子元素 */
+/* The React root takes no part in layout: the card is the grid item of body. */
 #root { display: contents; }
 body {
   margin: 0;
@@ -49,7 +49,7 @@ input.invalid { border-color: var(--danger); }
   font-size: 15px;
   border-radius: 8px;
   cursor: pointer;
-  transition: none; /* 截图时不要动画，否则会抓到过渡中间态 */
+  transition: none; /* No transitions, so a snapshot never catches a state halfway through. */
 }
 .btn-primary { background: var(--primary); color: #fff; border: 1px solid var(--primary); }
 .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
