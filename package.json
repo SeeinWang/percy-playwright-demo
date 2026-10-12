@@ -1,0 +1,22 @@
+{
+  "name": "percy-playwright-demo",
+  "version": "1.0.0",
+  "description": "Percy + Playwright visual testing demo",
+  "scripts": {
+    "serve": "http-server public -p 4173 -c-1",
+    "test": "playwright test",
+    "test:update": "playwright test --update-snapshots",
+    "percy": "percy exec -- playwright test",
+    "report": "playwright show-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@percy/cli": "^1.32.11",
+    "@percy/playwright": "^1.1.2",
+    "@playwright/test": "^1.64.0",
+    "http-server": "^14.1.1"
+  }
+}
