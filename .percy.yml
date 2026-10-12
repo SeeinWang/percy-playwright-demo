@@ -1,4 +1,4 @@
 version: 2
 snapshot:
-  widths: [375, 1280]   # 手机 + 桌面两种宽度
+  widths: [375, 1280]   # phone and desktop
   min-height: 800

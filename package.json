@@ -7,7 +7,6 @@
     "build": "vite build",
     "typecheck": "tsc",
     "test": "playwright test",
-    "test:update": "playwright test --update-snapshots",
     "percy": "percy exec -- playwright test",
     "report": "playwright show-report"
   },

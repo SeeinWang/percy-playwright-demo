@@ -1,96 +1,102 @@
 import { test, expect, type Page } from '@playwright/test';
 import percySnapshot from '@percy/playwright';
 
-// enablePseudoClassSerialization 在 @percy/core 的配置 schema 里有（运行时生效），
-// 但 @percy/playwright 1.1.2 的 SnapshotOptions 类型还没收录，所以这里放宽类型。
+// Division of labour:
+//   - Playwright assertions check behaviour: hover changes the colour, Tab moves focus
+//     in the right order, submitting shows the right message. No baseline images.
+//   - Percy checks how it looks: every snapshot is rendered in 4 browsers x 2 widths
+//     (.percy.yml) and reviewed on percy.io. Baselines live in Percy, not in git.
+// percySnapshot is a no-op unless the run is wrapped in `percy exec` with PERCY_TOKEN set.
+
+// Percy re-renders the serialized DOM in its own browsers, so the pointer and focus
+// do not travel with it. Interactive states are passed explicitly:
+//   hover -> pseudoClassEnabledElements (the documented option; Percy never detects hover).
+//   focus -> FOCUS_STATES. pseudoClassEnabledElements copies ~400 computed styles as
+//            !important, including -webkit-text-fill-color resolved to rgb(0,0,0), which
+//            turns an input's placeholder black; it also forces :hover/:active.
+//            enablePseudoClassSerialization (@percy/cli >= 1.32.8) only rewrites :focus
+//            rules and stamps the focused element. It is missing from the SnapshotOptions
+//            type in @percy/playwright 1.1.2, hence the cast.
 const FOCUS_STATES = { enablePseudoClassSerialization: true } as Parameters<typeof percySnapshot>[2];
 
-// 交互状态怎么拍（Percy 是把 DOM 拿去它的浏览器重新渲染的，鼠标和焦点不会跟过去）：
-//   hover → pseudoClassEnabledElements（官方文档的方式，Percy 不会自动识别 hover）
-//   focus → FOCUS_STATES（@percy/cli >= 1.32.8；自动识别当前焦点，不抄计算样式）
-// Playwright 的 toHaveScreenshot 截的是真实画面，两种状态都直接 hover()/focus() 即可。
+const COLORS = {
+  primary: 'rgb(37, 99, 235)',
+  primaryHover: 'rgb(29, 78, 216)',
+  secondaryHover: 'rgb(245, 246, 248)',
+};
 
-// 点击之后鼠标和焦点都会留在按钮上，Playwright 会把这个 hover/focus 拍进去。
-// 拍“结果”类截图前先清掉，两边截到的才是同一个状态。
+// A click leaves the pointer over the button and focus on it. Clear both before
+// snapshotting a result state so it is not captured mid-interaction.
 async function clearInteraction(page: Page) {
   await page.mouse.move(0, 0);
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
 }
 
-// 两套截图：
-//   1. percySnapshot      → 上传到 Percy 云端，在网页上 review / approve（需要 PERCY_TOKEN）
-//   2. toHaveScreenshot   → Playwright 本地像素对比，不需要任何账号
-// 没有通过 `percy exec` 运行时，percySnapshot 会自动跳过，不会报错。
-
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
 });
 
-test('默认状态', async ({ page }) => {
-  await expect(page.getByRole('heading', { name: '订阅我们的周报' })).toBeVisible();
-  await percySnapshot(page, '订阅卡片 - 默认');
-  await expect(page).toHaveScreenshot('default.png');
+test('renders the signup card', async ({ page }) => {
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.locator('#email')).toHaveValue('');
+  await expect(page.locator('#error')).toHaveCount(0);
+  await percySnapshot(page, 'Signup card - default');
 });
 
-test('主按钮 hover', async ({ page }) => {
-  const btn = page.locator('#primary-btn');
-  await btn.hover();
-  // 交互断言：hover 后背景色真的变了
-  await expect(btn).toHaveCSS('background-color', 'rgb(29, 78, 216)');
-
-  // Percy 是把 DOM 拿去它自己的浏览器重新渲染的，鼠标不在那边，
-  // 所以要告诉它哪个元素要“强制” hover。
-  await percySnapshot(page, '订阅卡片 - 主按钮 hover', {
+test('primary button darkens on hover', async ({ page }) => {
+  const button = page.locator('#primary-btn');
+  await expect(button).toHaveCSS('background-color', COLORS.primary);
+  await button.hover();
+  await expect(button).toHaveCSS('background-color', COLORS.primaryHover);
+  await percySnapshot(page, 'Signup card - primary button hover', {
     pseudoClassEnabledElements: { selectors: ['#primary-btn'] },
   });
-  await expect(btn).toHaveScreenshot('primary-hover.png');
 });
 
-test('次按钮 hover', async ({ page }) => {
-  const btn = page.locator('#secondary-btn');
-  await btn.hover();
-  await expect(btn).toHaveCSS('background-color', 'rgb(245, 246, 248)');
-  await percySnapshot(page, '订阅卡片 - 次按钮 hover', {
+test('secondary button gets a background on hover', async ({ page }) => {
+  const button = page.locator('#secondary-btn');
+  await button.hover();
+  await expect(button).toHaveCSS('background-color', COLORS.secondaryHover);
+  await percySnapshot(page, 'Signup card - secondary button hover', {
     pseudoClassEnabledElements: { selectors: ['#secondary-btn'] },
   });
-  await expect(btn).toHaveScreenshot('secondary-hover.png');
 });
 
-test('键盘 Tab 聚焦', async ({ page }) => {
-  // 用 Tab 走一遍焦点顺序：输入框 → 订阅 → 以后再说
+test('Tab moves focus from the input to the primary then the secondary button', async ({ page }) => {
   await page.keyboard.press('Tab');
   await expect(page.locator('#email')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator('#primary-btn')).toBeFocused();
+  await expect(page.locator('#primary-btn')).toHaveCSS('outline-style', 'solid');
+  await percySnapshot(page, 'Signup card - primary button focus', FOCUS_STATES);
 
-  // focus 不要用 pseudoClassEnabledElements：它会把元素约 400 条计算样式抄成 !important，
-  // 其中 -webkit-text-fill-color 被写死成 rgb(0,0,0)，placeholder 继承后会变成黑字；
-  // 它还会顺带强制 hover/active。focus 用自动识别就够了（把 CSS 里的 :focus 改写成属性选择器）。
-  await percySnapshot(page, '订阅卡片 - 主按钮 focus', FOCUS_STATES);
-  await expect(page.locator('.card')).toHaveScreenshot('primary-focus.png');
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#secondary-btn')).toBeFocused();
 });
 
-test('输入框 focus', async ({ page }) => {
-  await page.locator('#email').focus();
-  await expect(page.locator('#email')).toHaveCSS('border-color', 'rgb(37, 99, 235)');
-  await percySnapshot(page, '订阅卡片 - 输入框 focus', FOCUS_STATES);
-  await expect(page.locator('.card')).toHaveScreenshot('email-focus.png');
+test('email input shows a focus ring', async ({ page }) => {
+  const input = page.locator('#email');
+  await input.focus();
+  await expect(input).toHaveCSS('border-color', COLORS.primary);
+  await expect(input).toHaveCSS('box-shadow', /rgba\(37, 99, 235, 0\.25\)/);
+  await percySnapshot(page, 'Signup card - email input focus', FOCUS_STATES);
 });
 
-test('提交无效邮箱显示错误', async ({ page }) => {
+test('an invalid email shows an error', async ({ page }) => {
   await page.locator('#email').fill('not-an-email');
   await page.locator('#primary-btn').click();
   await expect(page.locator('#error')).toBeVisible();
+  await expect(page.locator('#email')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#success')).toHaveCount(0);
   await clearInteraction(page);
-  await percySnapshot(page, '订阅卡片 - 错误状态');
-  await expect(page.locator('.card')).toHaveScreenshot('error.png');
+  await percySnapshot(page, 'Signup card - invalid email');
 });
 
-test('提交有效邮箱显示成功', async ({ page }) => {
+test('a valid email shows the success message', async ({ page }) => {
   await page.locator('#email').fill('me@example.com');
   await page.locator('#primary-btn').click();
   await expect(page.locator('#success')).toBeVisible();
+  await expect(page.locator('form')).toHaveCount(0);
   await clearInteraction(page);
-  await percySnapshot(page, '订阅卡片 - 成功');
-  await expect(page.locator('.card')).toHaveScreenshot('success.png');
+  await percySnapshot(page, 'Signup card - subscribed');
 });
