@@ -10,6 +10,8 @@
   --success: #16a34a;
 }
 * { box-sizing: border-box; }
+/* React 挂载点不参与布局，卡片直接作为 body 的 grid 子元素 */
+#root { display: contents; }
 body {
   margin: 0;
   min-height: 100vh;

@@ -1,6 +1,5 @@
-// @ts-check
-const { test, expect } = require('@playwright/test');
-const percySnapshot = require('@percy/playwright');
+import { test, expect } from '@playwright/test';
+import percySnapshot from '@percy/playwright';
 
 // 两套截图：
 //   1. percySnapshot      → 上传到 Percy 云端，在网页上 review / approve（需要 PERCY_TOKEN）
