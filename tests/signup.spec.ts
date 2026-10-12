@@ -1,9 +1,21 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import percySnapshot from '@percy/playwright';
 
 // enablePseudoClassSerialization 在 @percy/core 的配置 schema 里有（运行时生效），
 // 但 @percy/playwright 1.1.2 的 SnapshotOptions 类型还没收录，所以这里放宽类型。
 const FOCUS_STATES = { enablePseudoClassSerialization: true } as Parameters<typeof percySnapshot>[2];
+
+// 交互状态怎么拍（Percy 是把 DOM 拿去它的浏览器重新渲染的，鼠标和焦点不会跟过去）：
+//   hover → pseudoClassEnabledElements（官方文档的方式，Percy 不会自动识别 hover）
+//   focus → FOCUS_STATES（@percy/cli >= 1.32.8；自动识别当前焦点，不抄计算样式）
+// Playwright 的 toHaveScreenshot 截的是真实画面，两种状态都直接 hover()/focus() 即可。
+
+// 点击之后鼠标和焦点都会留在按钮上，Playwright 会把这个 hover/focus 拍进去。
+// 拍“结果”类截图前先清掉，两边截到的才是同一个状态。
+async function clearInteraction(page: Page) {
+  await page.mouse.move(0, 0);
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+}
 
 // 两套截图：
 //   1. percySnapshot      → 上传到 Percy 云端，在网页上 review / approve（需要 PERCY_TOKEN）
@@ -69,7 +81,7 @@ test('提交无效邮箱显示错误', async ({ page }) => {
   await page.locator('#email').fill('not-an-email');
   await page.locator('#primary-btn').click();
   await expect(page.locator('#error')).toBeVisible();
-  await page.locator('#primary-btn').blur();
+  await clearInteraction(page);
   await percySnapshot(page, '订阅卡片 - 错误状态');
   await expect(page.locator('.card')).toHaveScreenshot('error.png');
 });
@@ -78,6 +90,7 @@ test('提交有效邮箱显示成功', async ({ page }) => {
   await page.locator('#email').fill('me@example.com');
   await page.locator('#primary-btn').click();
   await expect(page.locator('#success')).toBeVisible();
+  await clearInteraction(page);
   await percySnapshot(page, '订阅卡片 - 成功');
   await expect(page.locator('.card')).toHaveScreenshot('success.png');
 });

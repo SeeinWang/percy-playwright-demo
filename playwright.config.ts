@@ -11,8 +11,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  // 本地截图对比：允许极少量像素差（抗锯齿）
-  expect: { toHaveScreenshot: { maxDiffPixelRatio: 0.01 } },
+  // 单个像素颜色差多少才算“不同”（0–1）。默认 0.2 太宽：hover 前后两种蓝色会被当成同色。
+  expect: { toHaveScreenshot: { threshold: 0.05 } },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   // 测的是打包后的产物（vite build + preview），和线上一致
   webServer: {
