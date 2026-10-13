@@ -22,7 +22,7 @@ const FOCUS_STATES = { enablePseudoClassSerialization: true } as Parameters<type
 const COLORS = {
   primary: 'rgb(37, 99, 235)',
   primaryHover: 'rgb(29, 78, 216)',
-  secondaryHover: 'rgb(245, 246, 248)',
+  secondaryHover: 'rgb(199, 210, 254)',
 };
 
 // A click leaves the pointer over the button and focus on it. Clear both before
