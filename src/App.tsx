@@ -36,7 +36,7 @@ export function App() {
           />
           {invalid && (
             <p id="error" className="error">
-              Please enter a valid email address
+              That doesn't look like an email address
             </p>
           )}
 
