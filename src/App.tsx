@@ -17,7 +17,7 @@ export function App() {
   return (
     <main className="card">
       <h1>Subscribe to our weekly newsletter</h1>
-      <p className="lead">One email a week. Unsubscribe anytime.</p>
+      <p className="lead">One short email every Monday. Unsubscribe anytime.</p>
 
       {done ? (
         <p id="success" className="success">You're subscribed 🎉</p>
