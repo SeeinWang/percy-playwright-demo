@@ -54,5 +54,5 @@ input.invalid { border-color: var(--danger); }
 .btn-primary { background: var(--primary); color: #fff; border: 1px solid var(--primary); }
 .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
 .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
-.btn-secondary:hover { background: #eef2ff; }
+.btn-secondary:hover { background: #c7d2fe; }
 .btn:focus { outline: 3px solid rgba(37, 99, 235, 0.45); outline-offset: 2px; }
