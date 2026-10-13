@@ -44,7 +44,7 @@ export function App() {
             <button id="primary-btn" type="submit" className="btn btn-primary">
               Subscribe
             </button>
-            <button id="secondary-btn" type="button" className="btn btn-secondary">
+            <button id="secondary-btn" tabIndex={-1} type="button" className="btn btn-secondary">
               Maybe later
             </button>
           </div>
