@@ -20,9 +20,6 @@ jobs:
         run: npx percy exec -- npx playwright test
         env:
           PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-          # Without Percy's GitHub app, Percy does not know which branch a PR merges
-          # into and finds no baseline. Empty on push builds, which Percy reads as unset.
-          PERCY_TARGET_BRANCH: ${{ github.base_ref }}
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
