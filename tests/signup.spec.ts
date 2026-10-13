@@ -74,6 +74,14 @@ test('Tab moves focus from the input to the primary then the secondary button', 
   await expect(page.locator('#secondary-btn')).toBeFocused();
 });
 
+test('secondary button shows a focus ring', async ({ page }) => {
+  const button = page.locator('#secondary-btn');
+  await button.focus();
+  await expect(button).toBeFocused();
+  await expect(button).toHaveCSS('outline-style', 'solid');
+  await percySnapshot(page, 'Signup card - secondary button focus', FOCUS_STATES);
+});
+
 test('email input shows a focus ring', async ({ page }) => {
   const input = page.locator('#email');
   await input.focus();
