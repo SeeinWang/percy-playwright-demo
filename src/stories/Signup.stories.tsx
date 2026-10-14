@@ -57,7 +57,7 @@ export const Subscribed: Story = {
     <main className="card">
       <h1>Subscribe to our weekly newsletter</h1>
       <p className="lead">One email a week. Unsubscribe anytime.</p>
-      <p className="success">You're subscribed 🎉</p>
+      <p className="success">Thanks! You're on the list 🎉</p>
     </main>
   ),
 };
