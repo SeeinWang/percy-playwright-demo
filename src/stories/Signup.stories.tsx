@@ -26,16 +26,20 @@ const emailField = () => (
   </div>
 );
 
-export const Buttons: Story = { render: buttons };
-
 // Interaction states, forced by storybook-addon-pseudo-states. Each selector limits
 // the state to one element; `true` would apply it to everything in the story.
 // The addon rewrites :hover/:focus rules in the browser's CSSOM only, and Percy re-renders
 // from the original CSS files, so the rewrite is lost unless Percy runs the story's JS again.
 const percyWithJs = { percy: { enableJavaScript: true } };
+
+// Buttons: the plain state first, then each interaction state.
+export const Buttons: Story = { render: buttons };
 export const PrimaryHover: Story = { render: buttons, parameters: { pseudo: { hover: ['#primary'] }, ...percyWithJs } };
 export const SecondaryHover: Story = { render: buttons, parameters: { pseudo: { hover: ['#secondary'] }, ...percyWithJs } };
 export const PrimaryFocus: Story = { render: buttons, parameters: { pseudo: { focus: ['#primary'] }, ...percyWithJs } };
+
+// Email field: the plain state first, then focus.
+export const EmailField: Story = { render: emailField };
 export const EmailFocus: Story = { render: emailField, parameters: { pseudo: { focus: ['#email'] }, ...percyWithJs } };
 
 export const EmailError: Story = {
