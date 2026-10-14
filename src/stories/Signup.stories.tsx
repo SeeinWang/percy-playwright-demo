@@ -46,7 +46,7 @@ export const EmailError: Story = {
   render: () => (
     <div className="card">
       <label htmlFor="email">Email</label>
-      <input id="email" type="email" defaultValue="not-an-email" className="invalid" aria-invalid aria-describedby="error" />
+      <input id="email" type="email" defaultValue="hello@" className="invalid" aria-invalid aria-describedby="error" />
       <p id="error" className="error">That doesn't look like an email address</p>
     </div>
   ),
