@@ -10,16 +10,30 @@ type Story = StoryObj;
 
 export const Card: Story = { render: () => <App /> };
 
-export const Buttons: Story = {
-  render: () => (
-    <div className="card">
-      <div className="actions">
-        <button type="button" className="btn btn-primary">Subscribe</button>
-        <button type="button" className="btn btn-secondary">Maybe later</button>
-      </div>
+const buttons = () => (
+  <div className="card">
+    <div className="actions">
+      <button id="primary" type="button" className="btn btn-primary">Subscribe</button>
+      <button id="secondary" type="button" className="btn btn-secondary">Maybe later</button>
     </div>
-  ),
-};
+  </div>
+);
+
+const emailField = () => (
+  <div className="card">
+    <label htmlFor="email">Email</label>
+    <input id="email" type="email" placeholder="you@example.com" />
+  </div>
+);
+
+export const Buttons: Story = { render: buttons };
+
+// Interaction states, forced by storybook-addon-pseudo-states. Each selector limits
+// the state to one element; `true` would apply it to everything in the story.
+export const PrimaryHover: Story = { render: buttons, parameters: { pseudo: { hover: ['#primary'] } } };
+export const SecondaryHover: Story = { render: buttons, parameters: { pseudo: { hover: ['#secondary'] } } };
+export const PrimaryFocus: Story = { render: buttons, parameters: { pseudo: { focus: ['#primary'] } } };
+export const EmailFocus: Story = { render: emailField, parameters: { pseudo: { focus: ['#email'] } } };
 
 export const EmailError: Story = {
   render: () => (
