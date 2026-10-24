@@ -45,3 +45,19 @@ jobs:
         with:
           name: a11y-report
           path: playwright-report/
+
+  # Storybook: every story is a Percy snapshot, in its own Percy project
+  # (sharing one would mark the other side's snapshots as missing on every build).
+  storybook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build-storybook
+      - run: npx percy storybook ./storybook-static
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN_STORYBOOK }}
