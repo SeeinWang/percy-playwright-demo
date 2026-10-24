@@ -26,7 +26,9 @@ npm run report    # 打开 HTML 报告
 2. 本地：`export PERCY_TOKEN=xxx && npm run percy`
 3. CI：仓库 Settings → Secrets → Actions 加 `PERCY_TOKEN`，之后每次 push / PR 自动上传。
 
-第一次 build 是基准；之后每个 build 只把有变化的截图标出来。在 Percy 上 Approve 的 build 就是新的基准。
+第一次 build 是基准；之后每个 build 只把有变化的截图标出来。PR 的 build 跟 main 比，只有合并进 main 的改动才会成为新基准（只在 PR 上 Approve 不会）。
+
+完整的学习笔记见 [docs/percy-notes.md](docs/percy-notes.md)。
 
 ## hover / focus
 
